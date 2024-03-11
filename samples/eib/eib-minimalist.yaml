@@ -22,3 +22,15 @@ operatingSystem:
     - username: root
       encryptedPassword: $6$Lm7YDo4um1EYm3L1$/5YITBH0iBvN5mYHQLaLuNE54Dp/4Yg5yCZzXW.clgkUQSvHLuzklzxaOKl9AiKUccks58qYbEdoET.wLOWLh1
       createHomeDir: true
+#     - username: some-user
+#       encryptedPassword: ***
+#       sshKeys:
+#         - ssh-rsa *** some-user@localhost.localdomain
+#       createHomeDir: true
+#       secondaryGroups:
+#         - wheel
+#   packages:
+#     sccRegistrationCode: ***
+# kubernetes:
+#   version: v1.27.4+k3s1
+#   version: v1.29.0+rke2r1
