@@ -103,17 +103,21 @@ helm list -A
 
 ### ngrok Ingress Controller
 
-Grab Authentication Token and API key from [ngrok dashboard](https://dashboard.ngrok.com/)
+We can use ngrok to ease the exposition of our apps thanks to [ngrok Kubernetes Ingress Controller](https://github.com/ngrok/kubernetes-ingress-controller).
 
 ```bash
+# adds ngrok chart repo
 helm repo add ngrok https://ngrok.github.io/kubernetes-ingress-controller
 
+# creates ngrok namespace
 kubectl create ns ngrok-ingress-controller
 
+# creates a secret with ngrok authentification (grab Authentication Token and API key from https://dashboard.ngrok.com/)
 kubectl create secret generic --namespace ngrok-ingress-controller ngrok-credentials \
 --from-literal=AUTHTOKEN=[AUTHTOKEN] \
 --from-literal=API_KEY=[APIKEY]
 
+# installs ngrok Ingress Controller
 helm upgrade --install ngrok-ingress-controller ngrok/kubernetes-ingress-controller \
 --namespace ngrok-ingress-controller \
 --create-namespace \
@@ -123,13 +127,16 @@ helm upgrade --install ngrok-ingress-controller ngrok/kubernetes-ingress-control
 ### Cow demo application
 
 ```bash
+# adds devpro chart repo
 helm repo add devpro https://devpro.github.io/helm-charts
 
+# adds the web app without ingress
 helm upgrade --install cow-demo devpro/cow-demo --create-namespace --namespace demo --set cow.color=green --set replicaCount=6
 
 # makes sure the application runs fine (it will be accessible on http://localhost:8080)
 kubectl port-forward service/cow-demo-svc 8080:80 -n demo
 
+# updates the web app with ingress
 helm upgrade --install cow-demo devpro/cow-demo --create-namespace --namespace demo \
 --set ingress.enabled=true \
 --set ingress.className=ngrok \
@@ -143,8 +150,7 @@ Open [cow-demo.kubecon24.ngrok.app](https://cow-demo.kubecon24.ngrok.app)
 ### Game 2048 application
 
 ```bash
-helm repo add devpro https://devpro.github.io/helm-charts
-
+# creates the web app with ingress
 helm upgrade --install game-2048 devpro/game-2048 --create-namespace --namespace demo \
 --set ingress.enabled=true \
 --set ingress.className=ngrok \
@@ -157,6 +163,9 @@ Open [game-2048.kubecon24.ngrok.app](https://game-2048.kubecon24.ngrok.app)
 ### Install Akri
 
 ```bash
+# adds akri chart repo
 helm repo add akri-helm-charts https://project-akri.github.io/akri/
+
+# installs akri
 helm install akri akri-helm-charts/akri --set kubernetesDistro=k3s
 ```
