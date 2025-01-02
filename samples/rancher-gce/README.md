@@ -1,51 +1,51 @@
 # Rancher on Google Cloud Compute Engine (VM)
 
+In this scenario, we'll see how we can use Rancher to manage Kubernetes clusters in Google Cloud.
+
 ## Requirements
 
 ### Google Cloud SDK
 
-If not already installed, download and install the [Google Cloud SDK](https://cloud.google.com/sdk/).
-
-Check the SDK is installed:
+If not already installed, download and install the SDK:
 
 ```bash
 gcloud version
 ```
 
+> [Google Cloud SDK](https://cloud.google.com/sdk/) is a set of libraries and tools for interacting with Google Cloud products and services
+
 ### Google Cloud account
 
-If your organization has a landing zone, make sure to log in through it to the right user (your Google account may not be the one to be used to Google Cloud).
-
-Authentify:
+Authentify from the terminal:
 
 ```bash
 gcloud auth login
 ```
 
-## Installation
+> If your organization has a landing zone, make sure to log in with the right user (your Google account may not be the one to be used to Google Cloud)
 
-Source the files to be able to call functions:
+### Script library
+
+Make the functions available in your terminal by sourcing the local files:
 
 ```bash
 . ./scripts/index.sh
 ```
 
-Check authentifcation and enables services:
+> This repository holds many shell functions to help running the scenario
 
-```bash
-googlecloud_check_auth
-googlecloud_enable_compute
-```
+### Configuration
 
 Create an .env file with your variables:
 
 ```bash
 GCLOUD_PROJECT_ID='your-project-id'
 GCLOUD_REGION='europe-west1'
-GCLOUD_ZONE='europe-west1-b'
 GCLOUD_SUBNET='subnet-xxx-demo'
 GCLOUD_VPC='vpc-xxx-demo'
+GCLOUD_ZONE='europe-west1-b'
 MANAGEMENT_VM_NAME='vm-management'
+RANCHER_PASSWORD='some-password'
 ```
 
 Apply the .env file:
@@ -60,6 +60,17 @@ Set dynamic variables:
 MY_IP=$(linux_get_myip)
 ```
 
+## Setup
+
+### Management VM
+
+Check authentifcation and enables services:
+
+```bash
+googlecloud_check_auth
+googlecloud_enable_compute
+```
+
 Create the network:
 
 ```bash
@@ -72,21 +83,66 @@ Create the VM:
 ```bash
 googlecloud_create_vm $MANAGEMENT_VM_NAME $GCLOUD_PROJECT_ID $GCLOUD_ZONE n1-standard-8 ubuntu-2204-lts ubuntu-os-cloud $GCLOUD_SUBNET
 MANAGEMENT_VM_IP=$(googlecloud_get_vmip $MANAGEMENT_VM_NAME $GCLOUD_ZONE)
-googlecloud_create_firewallrule "${GCLOUD_VPC}-ssh" $GCLOUD_VPC "tcp:22" "${MY_IP}/32"
-googlecloud_create_firewallrule "${GCLOUD_VPC}-http" $GCLOUD_VPC "tcp:80,tcp:443" "0.0.0.0/0"
+googlecloud_create_firewallrule "${GCLOUD_VPC}-allow-shell" $GCLOUD_VPC 'tcp:22' "${MY_IP}/32"
+googlecloud_create_firewallrule "${GCLOUD_VPC}-allow-public" $GCLOUD_VPC 'tcp:80,tcp:443,icmp' '0.0.0.0/0'
+googlecloud_create_firewallrule "${GCLOUD_VPC}-allow-internal" $GCLOUD_VPC 'All' '10.128.0.0/9' # default internal IP range for VMs in the VPC
+googlecloud_create_firewallrule "${GCLOUD_VPC}-allow-healthcheck" $GCLOUD_VPC 'tcp' '35.191.0.0/16,130.211.0.0/22,209.85.152.0/22,209.85.204.0/22'
 ssh-keyscan -H $MANAGEMENT_VM_IP >> ~/.ssh/known_hosts
 #googlecloud_execute_vmcommand $MANAGEMENT_VM_NAME $GCLOUD_ZONE "ls -alrt"
 ```
 
-Install Rancher:
-
-```bash
-ssh -i ~/.ssh/google_compute_engine $MANAGEMENT_VM_IP 'bash -s' < ./samples/rancher-gce/debian_packages.sh
-ssh -i ~/.ssh/google_compute_engine $MANAGEMENT_VM_IP "RANCHER_DOMAIN='rancher.${MANAGEMENT_VM_IP}.sslip.io' bash -s" < ./samples/rancher-gce/rancher.sh
-```
+If needed, run on the following commands:
 
 ```bash
 gcloud compute ssh $MANAGEMENT_VM_NAME --zone=$GCLOUD_ZONE
 gcloud compute instances suspend $MANAGEMENT_VM_NAME --zone=$GCLOUD_ZONE
 gcloud compute instances resume $MANAGEMENT_VM_NAME --zone=$GCLOUD_ZONE
 ```
+
+### Management cluster with Rancher
+
+Install Rancher:
+
+```bash
+ssh -i ~/.ssh/google_compute_engine $MANAGEMENT_VM_IP 'bash -s' < ./samples/rancher-gce/debian_packages.sh
+ssh -i ~/.ssh/google_compute_engine $MANAGEMENT_VM_IP "RANCHER_DOMAIN='rancher.${MANAGEMENT_VM_IP}.sslip.io' RANCHER_PASSWORD='${RANCHER_PASSWORD}' bash -s" < ./samples/rancher-gce/rancher.sh
+```
+
+Open Rancher in your browser and log-in with admin and the displayed password:
+
+```bash
+echo "Rancher URL: https://rancher.${MANAGEMENT_VM_IP}.sslip.io"
+echo "Rancher password: ${RANCHER_PASSWORD}"
+```
+
+In Rancher, in Cluster Management, in Cloud Credentials, create new Google Cloud credentials.
+
+### Downstream GKE cluster
+
+In Rancher, in Cluster Management, create a new cluster Google GKE.
+
+Set Google Project ID and click Authenticate.
+
+Set name "gke-myname-myenv".
+
+In Node pools, can be renamed workload.
+
+In Config, select the Zone.
+
+In Networking, select the Network.
+
+Click Save.
+
+Wait few minutes.
+
+### Downstream GCE cluster with Node driver
+
+In Cluster Management, in Node Drivers, select Google GCE, and click Activate.
+
+In Rancher, in Cluster Management, create a new cluster Google GCE.
+
+TODO
+
+### Downstream GCE cluster with Cluster API (Rancher Turtles)
+
+TODO

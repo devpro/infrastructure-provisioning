@@ -9,7 +9,6 @@ LETSENCRYPT_EMAIL_ADDRESS='john.wick@google.com'
 RANCHER_REPOSITORY='latest'
 RANCHER_VERSION='2.9.1'
 RANCHER_REPLICAS='1'
-RANCHER_ADMIN_PASSWORD='Sus3R@ncherR0x'
 
 # downloads and sources shared scripts
 curl -sfL -C - https://raw.githubusercontent.com/devpro/infrastructure-provisioning/${SETUP_BRANCH}/scripts/download.sh | GIT_REVISION=refs/heads/${SETUP_BRANCH} sh -s -- -o setup
@@ -25,6 +24,6 @@ k8s_create_letsencryptclusterissuer $INGRESS_CLASSNAME $LETSENCRYPT_EMAIL_ADDRES
 # installs & initializes Rancher
 rancher_install_withcertmanagerclusterissuer $RANCHER_REPOSITORY $RANCHER_VERSION $RANCHER_REPLICAS $RANCHER_DOMAIN letsencrypt-prod
 RANCHER_URL="https://${RANCHER_DOMAIN}"
-rancher_first_login $RANCHER_URL $RANCHER_ADMIN_PASSWORD
+rancher_first_login $RANCHER_URL $RANCHER_PASSWORD
 rancher_create_apikey $RANCHER_URL $LOGIN_TOKEN 'Automation API Key'
 rancher_wait_capiready

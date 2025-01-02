@@ -84,24 +84,25 @@ googlecloud_get_vmip() {
 # Arguments:
 #   Rule name
 #   VPC name
-#   Region
+#   Protocols and ports
+#   IP Range
 # Examples:
 #   googlecloud_create_firewallrule my-rule my-vpc-network "tcp:22,tcp:80,tcp:443" x.x.x.x/32
 #######################################
 googlecloud_create_firewallrule() {
   local name=$1
   local vpc=$2
-  local allow=$3
+  local protocolports=$3
   local iprange=$4
 
   gcloud compute firewall-rules create $name \
     --network $vpc \
-    --allow $allow \
+    --allow $protocolports \
     --source-ranges $iprange \
     --quiet
 
   if [ $? -eq 0 ]; then
-    echo "Firewall rule updated to allow traffic from ${iprange}"
+    echo "Firewall rule updated to allow traffic"
   else
     echo "Failed to update the firewall rule."
   fi
