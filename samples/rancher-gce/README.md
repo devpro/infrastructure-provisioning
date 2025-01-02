@@ -24,7 +24,7 @@ gcloud auth login
 
 ## Installation
 
-Source the files:
+Source the files to be able to call functions:
 
 ```bash
 . ./scripts/index.sh
@@ -37,18 +37,24 @@ googlecloud_check_auth
 googlecloud_enable_compute
 ```
 
-Define the variables:
+Create an .env file with your variables:
 
 ```bash
-GCLOUD_PROJECT_ID='presales-emea-119943' # your-project-id
+GCLOUD_PROJECT_ID='your-project-id'
 GCLOUD_REGION='europe-west1'
 GCLOUD_ZONE='europe-west1-b'
-GCLOUD_SUBNET='subnet-bthomas-demo'
-GCLOUD_VPC='vpc-bthomas-demo'
+GCLOUD_SUBNET='subnet-xxx-demo'
+GCLOUD_VPC='vpc-xxx-demo'
 MANAGEMENT_VM_NAME='vm-management'
 ```
 
-Get dynamic variables:
+Apply the .env file:
+
+```bash
+source .env
+```
+
+Set dynamic variables:
 
 ```bash
 MY_IP=$(linux_get_myip)
@@ -66,7 +72,8 @@ Create the VM:
 ```bash
 googlecloud_create_vm $MANAGEMENT_VM_NAME $GCLOUD_PROJECT_ID $GCLOUD_ZONE n1-standard-8 ubuntu-2204-lts ubuntu-os-cloud $GCLOUD_SUBNET
 MANAGEMENT_VM_IP=$(googlecloud_get_vmip $MANAGEMENT_VM_NAME $GCLOUD_ZONE)
-googlecloud_create_firewallrule "${GCLOUD_VPC}-admin" $GCLOUD_VPC "tcp:22,tcp:80,tcp:443" "${MY_IP}/32"
+googlecloud_create_firewallrule "${GCLOUD_VPC}-ssh" $GCLOUD_VPC "tcp:22" "${MY_IP}/32"
+googlecloud_create_firewallrule "${GCLOUD_VPC}-http" $GCLOUD_VPC "tcp:80,tcp:443" "0.0.0.0/0"
 ssh-keyscan -H $MANAGEMENT_VM_IP >> ~/.ssh/known_hosts
 #googlecloud_execute_vmcommand $MANAGEMENT_VM_NAME $GCLOUD_ZONE "ls -alrt"
 ```
@@ -74,6 +81,12 @@ ssh-keyscan -H $MANAGEMENT_VM_IP >> ~/.ssh/known_hosts
 Install Rancher:
 
 ```bash
-ssh -i ~/.ssh/google_compute_engine $MANAGEMENT_VM_IP 'bash -s' < ./samples/rancher-gce/debian-packages.sh
+ssh -i ~/.ssh/google_compute_engine $MANAGEMENT_VM_IP 'bash -s' < ./samples/rancher-gce/debian_packages.sh
 ssh -i ~/.ssh/google_compute_engine $MANAGEMENT_VM_IP "RANCHER_DOMAIN='rancher.${MANAGEMENT_VM_IP}.sslip.io' bash -s" < ./samples/rancher-gce/rancher.sh
+```
+
+```bash
+gcloud compute ssh $MANAGEMENT_VM_NAME --zone=$GCLOUD_ZONE
+gcloud compute instances suspend $MANAGEMENT_VM_NAME --zone=$GCLOUD_ZONE
+gcloud compute instances resume $MANAGEMENT_VM_NAME --zone=$GCLOUD_ZONE
 ```

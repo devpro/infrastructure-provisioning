@@ -107,6 +107,8 @@ googlecloud_create_firewallrule() {
   fi
 }
 
+# TODO: create googlecloud_create_firewallrule function (`gcloud compute firewall-rules delete $name`)
+
 #######################################
 # Run a command on a VM through SSH
 # Arguments:
