@@ -29,8 +29,9 @@ googlecloud_list_images() {
 #   Image family (OS)
 #   Image project
 #   Subnet
+#   Static IP name
 # Examples:
-#   googlecloud_create_vm my-vm my-project europe-west1-b n1-standard-8 ubuntu-2204-lts ubuntu-os-cloud my-vpc
+#   googlecloud_create_vm my-vm my-project europe-west1-b n1-standard-8 ubuntu-2204-lts ubuntu-os-cloud my-vpc my-ip
 #######################################
 googlecloud_create_vm() {
   local name=$1
@@ -40,6 +41,7 @@ googlecloud_create_vm() {
   local imageFamily=$5
   local imageProject=$6
   local subnet=$7
+  local staticip=$8
 
   echo 'Creating VM (Google Cloud Compute Engine)...'
 
@@ -49,7 +51,7 @@ googlecloud_create_vm() {
     --machine-type="${machinType}" \
     --image-family="${imageFamily}" \
     --image-project="${imageProject}" \
-    --network-interface=network-tier=PREMIUM,stack-type=IPV4_ONLY,subnet=${subnet}
+    --network-interface=network-tier=PREMIUM,stack-type=IPV4_ONLY,subnet=${subnet},address=$staticip
 
   echo "VM ${name} created successfully"
 }

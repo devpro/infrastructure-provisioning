@@ -24,6 +24,18 @@ gcloud auth login
 
 > If your organization has a landing zone, make sure to log in with the right user (your Google account may not be the one to be used to Google Cloud)
 
+### Google Cloud Service Account
+
+Go to [Service Accounts](https://console.cloud.google.com/projectselector/iam-admin/serviceaccounts)
+
+Switch to your Google Cloud account (may be different from your Google Workspace account).
+
+Select the project
+
+Create a project if it does not already exist.
+
+Create a key and download the json file.
+
 ### Script library
 
 Make the functions available in your terminal by sourcing the local files:
@@ -44,14 +56,15 @@ GCLOUD_REGION='europe-west1'
 GCLOUD_SUBNET='subnet-xxx-demo'
 GCLOUD_VPC='vpc-xxx-demo'
 GCLOUD_ZONE='europe-west1-b'
-MANAGEMENT_VM_NAME='vm-management'
+MANAGEMENT_STATICIP_NAME='ip-xxx-management'
+MANAGEMENT_VM_NAME='vm-xxx-management'
 RANCHER_PASSWORD='some-password'
 ```
 
 Apply the .env file:
 
 ```bash
-source .env
+source samples/rancher-gce/.env
 ```
 
 Set dynamic variables:
@@ -81,7 +94,8 @@ googlecloud_create_subnet $GCLOUD_SUBNET $GCLOUD_VPC $GCLOUD_REGION '10.0.0.0/24
 Create the VM:
 
 ```bash
-googlecloud_create_vm $MANAGEMENT_VM_NAME $GCLOUD_PROJECT_ID $GCLOUD_ZONE n1-standard-8 ubuntu-2204-lts ubuntu-os-cloud $GCLOUD_SUBNET
+gcloud compute addresses create $MANAGEMENT_STATICIP_NAME --region=$GCLOUD_REGION
+googlecloud_create_vm $MANAGEMENT_VM_NAME $GCLOUD_PROJECT_ID $GCLOUD_ZONE n1-standard-8 ubuntu-2204-lts ubuntu-os-cloud $GCLOUD_SUBNET $MANAGEMENT_STATICIP_NAME
 MANAGEMENT_VM_IP=$(googlecloud_get_vmip $MANAGEMENT_VM_NAME $GCLOUD_ZONE)
 googlecloud_create_firewallrule "${GCLOUD_VPC}-allow-shell" $GCLOUD_VPC 'tcp:22' "${MY_IP}/32"
 googlecloud_create_firewallrule "${GCLOUD_VPC}-allow-public" $GCLOUD_VPC 'tcp:80,tcp:443,icmp' '0.0.0.0/0'
@@ -117,7 +131,11 @@ echo "Rancher password: ${RANCHER_PASSWORD}"
 
 In Rancher, in Cluster Management, in Cloud Credentials, create new Google Cloud credentials.
 
-### Downstream GKE cluster
+Set Credential Name "googlecloud-myuser".
+
+Import the json key file.
+
+### Downstream GKE cluster (OK)
 
 In Rancher, in Cluster Management, create a new cluster Google GKE.
 
@@ -135,14 +153,20 @@ Click Save.
 
 Wait few minutes.
 
-### Downstream GCE cluster with Node driver
+### Downstream GCE cluster with Node driver (FAIL)
 
 In Cluster Management, in Node Drivers, select Google GCE, and click Activate.
 
 In Rancher, in Cluster Management, create a new cluster Google GCE.
 
-TODO
+Set a name "rke2-bthomas-demo".
 
-### Downstream GCE cluster with Cluster API (Rancher Turtles)
+Rename the machine pool.
+
+Error: rke2-bthomas-demo-workload-jl8pm-vzcs9-machine-provision-7wmh5 pod
+
+> error loading host rke2-bthomas-demo-workload-jl8pm-vzcs9: Docker machine "rke2-bthomas-demo-workload-jl8pm-vzcs9" does not exist. Use "docker-machine ls" to list machines. Use "docker-machine create" to add a new one.
+
+### Downstream GCE cluster with Cluster API and Rancher Turtles
 
 TODO
