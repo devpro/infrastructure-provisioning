@@ -67,6 +67,7 @@ rancher_first_login() {
 #   rancher_wait_capiready
 #######################################
 rancher_wait_capiready() {
+  echo 'Making sure capi-webhook-service is ready...'
   while true; do
     status=$(kubectl get deployment capi-controller-manager -n cattle-provisioning-capi-system -o jsonpath='{.status.conditions[?(@.type=="Available")].status}' 2>/dev/null)
     if [ "$status" == 'True' ]; then

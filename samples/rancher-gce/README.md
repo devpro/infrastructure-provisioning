@@ -6,7 +6,7 @@ In this scenario, we'll see how we can use Rancher to manage Kubernetes clusters
 
 ### Google Cloud SDK
 
-If not already installed, download and install the [SDK](https://cloud.google.com/sdk/) on your machine:
+If not already installed, download and install [Google Cloud SDK](https://cloud.google.com/sdk/) on your machine:
 
 ```bash
 gcloud version
@@ -99,10 +99,12 @@ Create the VM:
 
 ```bash
 gcloud compute addresses create $MANAGEMENT_STATICIP_NAME --region=$GCLOUD_REGION
-googlecloud_create_vm $MANAGEMENT_VM_NAME $GCLOUD_PROJECT_ID $GCLOUD_ZONE n1-standard-4 ubuntu-2204-lts ubuntu-os-cloud $GCLOUD_SUBNET $MANAGEMENT_STATICIP_NAME
+googlecloud_create_vm $MANAGEMENT_VM_NAME $GCLOUD_PROJECT_ID $GCLOUD_ZONE n1-standard-8 ubuntu-2204-lts ubuntu-os-cloud $GCLOUD_SUBNET $MANAGEMENT_STATICIP_NAME
 MANAGEMENT_VM_IP=$(googlecloud_get_vmip $MANAGEMENT_VM_NAME $GCLOUD_ZONE)
 ssh-keyscan -H $MANAGEMENT_VM_IP >> ~/.ssh/known_hosts
-#googlecloud_execute_vmcommand $MANAGEMENT_VM_NAME $GCLOUD_ZONE "ls -alrt"
+gcloud compute disks resize $MANAGEMENT_VM_NAME --size=50 --zone=$GCLOUD_ZONE --quiet
+gcloud compute ssh $MANAGEMENT_VM_NAME --zone=$GCLOUD_ZONE --command="sudo growpart /dev/sda 1"
+gcloud compute ssh $MANAGEMENT_VM_NAME --zone=$GCLOUD_ZONE --command="sudo resize2fs /dev/sda1"
 ```
 
 If needed, run the following commands.
@@ -190,12 +192,15 @@ The rke2-bthomas-demo-workload-jl8pm-vzcs9-machine-provision-7wmh5 pod is in err
 
 ### Downstream GCE cluster with Cluster API and Rancher Turtles
 
-TODO
+Install Rancher Turtles:
 
-Rancher Turtles [documentation](https://turtles.docs.rancher.com/turtles/v0.15/en/index.html), [releases](https://github.com/rancher/turtles/releases), [](https://github.com/rancher/turtles/tree/main/test/e2e/data/cluster-templates)
+```bash
+ssh -i ~/.ssh/google_compute_engine $MANAGEMENT_VM_IP "bash -s" < ./samples/rancher-gce/rancher_turtles.sh
+```
+
+Rancher Turtles [documentation](https://turtles.docs.rancher.com/turtles/v0.15/en/index.html), [releases](https://github.com/rancher/turtles/releases), [e2e/cluster-templates](https://github.com/rancher/turtles/tree/main/test/e2e/data/cluster-templates)
 
 https://github.com/ashawka/capi-demo
 https://cluster-api.sigs.k8s.io/user/quick-start.html
 https://github.com/kubernetes-sigs/cluster-api-provider-gcp
 https://github.com/rancher/cluster-api-provider-rke2/
-
