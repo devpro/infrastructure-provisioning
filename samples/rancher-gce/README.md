@@ -53,6 +53,7 @@ Create an .env file with your variables:
 ```bash
 GCLOUD_PROJECT_ID='your-project-id'
 GCLOUD_REGION='europe-west1'
+GCLOUD_SERVICEACCOUNT_KEYSFILE='/path/to/keys/somefile.json'
 GCLOUD_SUBNET='subnet-xxx-demo'
 GCLOUD_VPC='vpc-xxx-demo'
 GCLOUD_ZONE='europe-west1-b'
@@ -71,6 +72,7 @@ Set dynamic variables:
 
 ```bash
 MY_IP=$(linux_get_myip)
+GCP_B64ENCODED_CREDENTIALS=$(cat $GCLOUD_SERVICEACCOUNT_KEYSFILE | base64 | tr -d '\n')
 ```
 
 ## Setup
@@ -132,13 +134,13 @@ gcloud compute instances resume $MANAGEMENT_VM_NAME --zone=$GCLOUD_ZONE
 Install required packages on the management VM:
 
 ```bash
-ssh -i ~/.ssh/google_compute_engine $MANAGEMENT_VM_IP 'bash -s' < ./samples/rancher-gce/debian_packages.sh
+ssh -i ~/.ssh/google_compute_engine $MANAGEMENT_VM_IP 'bash -s' < ./samples/rancher-gce/scripts/debian_packages.sh
 ```
 
 Create the Kubernetes cluster on the management VM, with K3s distribution:
 
 ```bash
-ssh -i ~/.ssh/google_compute_engine $MANAGEMENT_VM_IP "bash -s" < ./samples/rancher-gce/k3s.sh
+ssh -i ~/.ssh/google_compute_engine $MANAGEMENT_VM_IP "bash -s" < ./samples/rancher-gce/scripts/k3s.sh
 ```
 
 ### Rancher
@@ -146,7 +148,7 @@ ssh -i ~/.ssh/google_compute_engine $MANAGEMENT_VM_IP "bash -s" < ./samples/ranc
 Install Rancher:
 
 ```bash
-ssh -i ~/.ssh/google_compute_engine $MANAGEMENT_VM_IP "RANCHER_DOMAIN='rancher.${MANAGEMENT_VM_IP}.sslip.io' RANCHER_PASSWORD='${RANCHER_PASSWORD}' bash -s" < ./samples/rancher-gce/rancher.sh
+ssh -i ~/.ssh/google_compute_engine $MANAGEMENT_VM_IP "RANCHER_DOMAIN='rancher.${MANAGEMENT_VM_IP}.sslip.io' RANCHER_PASSWORD='${RANCHER_PASSWORD}' bash -s" < ./samples/rancher-gce/scripts/rancher.sh
 ```
 
 Open Rancher in your browser and log in with this information:
@@ -190,17 +192,68 @@ The rke2-bthomas-demo-workload-jl8pm-vzcs9-machine-provision-7wmh5 pod is in err
 
 > error loading host rke2-bthomas-demo-workload-jl8pm-vzcs9: Docker machine "rke2-bthomas-demo-workload-jl8pm-vzcs9" does not exist. Use "docker-machine ls" to list machines. Use "docker-machine create" to add a new one.
 
-### Downstream GCE cluster with Cluster API and Rancher Turtles
+### Kubernetes Cluster API (CAPI)
 
 Install Rancher Turtles:
 
 ```bash
-ssh -i ~/.ssh/google_compute_engine $MANAGEMENT_VM_IP "bash -s" < ./samples/rancher-gce/rancher_turtles.sh
+ssh -i ~/.ssh/google_compute_engine $MANAGEMENT_VM_IP "bash -s" < ./samples/rancher-gce/scripts/rancher_turtles.sh
 ```
 
-Rancher Turtles [documentation](https://turtles.docs.rancher.com/turtles/v0.15/en/index.html), [releases](https://github.com/rancher/turtles/releases), [e2e/cluster-templates](https://github.com/rancher/turtles/tree/main/test/e2e/data/cluster-templates)
+References:
 
-https://github.com/ashawka/capi-demo
-https://cluster-api.sigs.k8s.io/user/quick-start.html
-https://github.com/kubernetes-sigs/cluster-api-provider-gcp
-https://github.com/rancher/cluster-api-provider-rke2/
+- Kubernetes Cluster API (CAPI) [quick start](https://cluster-api.sigs.k8s.io/user/quick-start.html)
+- CAPI provider for Google Cloud [kubernetes-sigs/cluster-api-provider-gcp](https://github.com/kubernetes-sigs/cluster-api-provider-gcp), [book](https://cluster-api-gcp.sigs.k8s.io/)
+- CAPI provider for RKE2 [rancher/cluster-api-provider-rke2](https://github.com/rancher/cluster-api-provider-rke2)
+- Rancher Turtles [documentation](https://turtles.docs.rancher.com/turtles/v0.15/en/index.html), [releases](https://github.com/rancher/turtles/releases), [e2e/cluster-templates](https://github.com/rancher/turtles/tree/main/test/e2e/data/cluster-templates)
+- Examples [ashawka/capi-demo](https://github.com/ashawka/capi-demo)
+
+### Downstream GKE cluster with Cluster API and Rancher Turtles
+
+Initialize Google Cloud CAPI Provider (ref. [The Cluster API Book > Quick Start](https://cluster-api.sigs.k8s.io/user/quick-start)):
+
+```bash
+ssh -i ~/.ssh/google_compute_engine $MANAGEMENT_VM_IP "GCP_B64ENCODED_CREDENTIALS=$GCP_B64ENCODED_CREDENTIALS bash -c 'clusterctl init --infrastructure gcp'"
+```
+
+TODO
+
+### Downstream RKE2 cluster on GCE with Cluster API and Rancher Turtles
+
+Initialize RKE2 Provider (ref. [Kubernetes Cluster API Provider RKE2 > Getting Started](https://caprke2.docs.rancher.com/01_user/01_getting-started.html)):
+
+```bash
+ssh -i ~/.ssh/google_compute_engine $MANAGEMENT_VM_IP "GCP_B64ENCODED_CREDENTIALS=$GCP_B64ENCODED_CREDENTIALS bash -c 'clusterctl init --bootstrap rke2 --control-plane rke2 --infrastructure gcp'"
+```
+
+```bash
+export GCP_REGION=$GCLOUD_REGION
+export GCP_PROJECT=$GCLOUD_PROJECT_ID
+export KUBERNETES_VERSION=1.23.3 # TODO
+export IMAGE_ID=projects/$GCP_PROJECT/global/images/<built image> # TODO
+export GCP_CONTROL_PLANE_MACHINE_TYPE=n1-standard-2
+export GCP_NODE_MACHINE_TYPE=n1-standard-2
+export GCP_NETWORK_NAME=$GCLOUD_VPC # TODO: VPC or SUBNET?
+export CLUSTER_NAME=rke2-demo # TODO
+```
+
+```bash
+clusterctl generate cluster capi-quickstart \
+  --kubernetes-version v1.32.0 \
+  --control-plane-machine-count=3 \
+  --worker-machine-count=3 \
+  > capi-quickstart.yaml
+
+clusterctl generate cluster --from https://github.com/rancher/cluster-api-provider-rke2/blob/main/examples/aws/cluster-template.yaml -n example-aws rke2-aws > aws-rke2-clusterctl.yaml
+```
+
+```bash
+kubectl apply -f capi-quickstart.yaml
+kubectl get cluster
+clusterctl describe cluster capi-quickstart
+clusterctl get kubeconfig capi-quickstart > capi-quickstart.kubeconfig
+```
+
+```bash
+kubectl delete cluster capi-quickstart
+```
