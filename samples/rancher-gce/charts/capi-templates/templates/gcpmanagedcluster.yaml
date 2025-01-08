@@ -1,0 +1,12 @@
+{{- if eq .Values.type "gke" }}
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: GCPManagedCluster
+metadata:
+  name: {{ .Values.name }}
+spec:
+  network:
+    name: {{ .Values.googlecloud.vpc }}
+  project: {{ .Values.googlecloud.project }}
+  region: {{ .Values.googlecloud.region }}
+{{- end }}

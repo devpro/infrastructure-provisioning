@@ -57,6 +57,7 @@ GCLOUD_SERVICEACCOUNT_KEYSFILE='/path/to/keys/somefile.json'
 GCLOUD_SUBNET='subnet-xxx-demo'
 GCLOUD_VPC='vpc-xxx-demo'
 GCLOUD_ZONE='europe-west1-b'
+KUBECONFIG=samples/rancher-gce/config/management-k3s.yaml
 MANAGEMENT_STATICIP_NAME='ip-xxx-management'
 MANAGEMENT_VM_NAME='vm-xxx-management'
 RANCHER_PASSWORD='some-password'
@@ -73,6 +74,7 @@ Set dynamic variables:
 ```bash
 MY_IP=$(linux_get_myip)
 GCP_B64ENCODED_CREDENTIALS=$(cat $GCLOUD_SERVICEACCOUNT_KEYSFILE | base64 | tr -d '\n')
+KUBECONFIG=$(pwd)/samples/rancher-gce/config/management-k3s.yaml
 ```
 
 ## Setup
@@ -109,21 +111,21 @@ gcloud compute ssh $MANAGEMENT_VM_NAME --zone=$GCLOUD_ZONE --command="sudo growp
 gcloud compute ssh $MANAGEMENT_VM_NAME --zone=$GCLOUD_ZONE --command="sudo resize2fs /dev/sda1"
 ```
 
-If needed, run the following commands.
+If needed, run the following commands:
 
-- Open a shell in the VM:
+- Open a shell in the VM
 
 ```bash
 gcloud compute ssh $MANAGEMENT_VM_NAME --zone=$GCLOUD_ZONE
 ```
 
-- Suspend the VM:
+- Suspend the VM
 
 ```bash
 gcloud compute instances suspend $MANAGEMENT_VM_NAME --zone=$GCLOUD_ZONE
 ```
 
-- Resume the VM:
+- Resume the VM
 
 ```bash
 gcloud compute instances resume $MANAGEMENT_VM_NAME --zone=$GCLOUD_ZONE
@@ -148,15 +150,35 @@ ssh -i ~/.ssh/google_compute_engine $MANAGEMENT_VM_IP "bash -s" < ./samples/ranc
 Install Rancher:
 
 ```bash
-ssh -i ~/.ssh/google_compute_engine $MANAGEMENT_VM_IP "RANCHER_DOMAIN='rancher.${MANAGEMENT_VM_IP}.sslip.io' RANCHER_PASSWORD='${RANCHER_PASSWORD}' bash -s" < ./samples/rancher-gce/scripts/rancher.sh
+RANCHER_DOMAIN="rancher.${MANAGEMENT_VM_IP}.sslip.io"
+ssh -i ~/.ssh/google_compute_engine $MANAGEMENT_VM_IP "RANCHER_DOMAIN='${RANCHER_DOMAIN}' RANCHER_PASSWORD='${RANCHER_PASSWORD}' bash -s" < ./samples/rancher-gce/scripts/rancher.sh
+update_env RANCHER_APITOKEN $(gcloud compute ssh $MANAGEMENT_VM_NAME --zone=$GCLOUD_ZONE --command="cat rancher_api.token")
+update_env RANCHER_URL "https://${RANCHER_DOMAIN}"
 ```
 
 Open Rancher in your browser and log in with this information:
 
 ```bash
-echo "Rancher URL: https://rancher.${MANAGEMENT_VM_IP}.sslip.io"
+echo "Rancher URL: ${RANCHER_URL}"
 echo "Rancher username: admin"
 echo "Rancher password: ${RANCHER_PASSWORD}"
+```
+
+Merge the cluster configuration with the local one:
+
+- Option 1 (need to open port 6443 in firewall)
+
+```bash
+scp -i ~/.ssh/google_compute_engine $MANAGEMENT_VM_IP:/etc/rancher/k3s/k3s.yaml samples/rancher-gce/config/management-k3s.yaml
+sed -i "s|server: https://127.0.0.1:6443|server: https://$MANAGEMENT_VM_IP:6443|g" samples/rancher-gce/config/management-k3s.yaml
+chmod 600 samples/rancher-gce/config/management-k3s.yaml
+```
+
+- Option 2 (need Rancher)
+
+```bash
+rancher_get_kubeconfig $RANCHER_URL 'local' $RANCHER_APITOKEN samples/rancher-gce/config/management-k3s.yaml
+chmod 600 samples/rancher-gce/config/management-k3s.yaml
 ```
 
 Configure access to Google Cloud within Rancher from the browser:
@@ -165,7 +187,7 @@ Configure access to Google Cloud within Rancher from the browser:
 - Set Credential Name "googlecloud-myuser"
 - Import the json key file
 
-### Downstream GKE cluster (OK)
+### Downstream GKE cluster -> OK
 
 From the browser:
 
@@ -178,7 +200,7 @@ From the browser:
 - Click Save
 - Wait few minutes for everything to be running smoothly
 
-### Downstream GCE cluster with Node driver (FAIL)
+### Downstream GCE cluster with Node driver -> FAIL
 
 From the browser:
 
@@ -213,10 +235,23 @@ References:
 Initialize Google Cloud CAPI Provider (ref. [The Cluster API Book > Quick Start](https://cluster-api.sigs.k8s.io/user/quick-start)):
 
 ```bash
-ssh -i ~/.ssh/google_compute_engine $MANAGEMENT_VM_IP "GCP_B64ENCODED_CREDENTIALS=$GCP_B64ENCODED_CREDENTIALS bash -c 'clusterctl init --infrastructure gcp'"
+# important to be done before (see https://github.com/kubernetes-sigs/cluster-api-provider-gcp/discussions/925),
+# otherwise, if init of the provider already done delete the infrastructure + manual deletion of namespace and CRDs
+export EXP_CAPG_GKE=true
+
+clusterctl init --infrastructure gcp
 ```
 
-TODO
+Create manifest file (ref. [Kubernetes Cluster API Provider GCP > Provisioning a GKE cluster](https://cluster-api-gcp.sigs.k8s.io/managed/provision)):
+
+```bash
+export GCP_PROJECT=$GCLOUD_PROJECT_ID
+export GCP_REGION=$GCLOUD_REGION
+export GCP_NETWORK_NAME=$GCLOUD_VPC
+export WORKER_MACHINE_COUNT=1
+
+clusterctl generate cluster gke-capi-bthomas-demo --flavor gke -i gcp  > capi-gke-quickstart.yaml
+```
 
 ### Downstream RKE2 cluster on GCE with Cluster API and Rancher Turtles
 

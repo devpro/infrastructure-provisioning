@@ -84,3 +84,15 @@ rancher_create_apikey() {
   API_TOKEN=$(echo $API_KEY_RESPONSE | jq -r .token)
   sleep 5
 }
+
+rancher_get_kubeconfig() {
+  local rancherUrl=$1
+  local clusterName=$2
+  local token=$3
+  local outputFile=$4
+
+  curl -s -k -H "Authorization: Bearer $token" \
+    -H 'Content-Type: application/json' \
+    -X POST \
+    "$rancherUrl/v3/clusters/$clusterName?action=generateKubeconfig" | jq -r .config > $outputFile
+}

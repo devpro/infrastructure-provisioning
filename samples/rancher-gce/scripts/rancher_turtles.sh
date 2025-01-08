@@ -10,7 +10,6 @@
 #
 # Usage:
 #   Export the required environment variables before running the script:
-#     export RANCHERTURTLES_VERSION="v0.14.0"
 #     ./rancher.sh
 # ============================================
 

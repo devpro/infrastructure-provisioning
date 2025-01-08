@@ -30,6 +30,7 @@ CERTMANAGER_ISSUER=${CERTMANAGER_ISSUER:-'letsencrypt-prod'}
 RANCHER_REPOSITORY=${RANCHER_REPOSITORY:-'latest'}
 RANCHER_VERSION=${RANCHER_VERSION:-'2.10.1'}
 RANCHER_REPLICAS=${RANCHER_REPLICAS:-'1'}
+RANCHER_URL="https://${RANCHER_DOMAIN}"
 
 # downloads and sources shared scripts
 curl -sfL -C - https://raw.githubusercontent.com/devpro/infrastructure-provisioning/${SETUP_BRANCH}/scripts/download.sh | GIT_REVISION=refs/heads/${SETUP_BRANCH} sh -s -- -o setup
@@ -37,7 +38,7 @@ curl -sfL -C - https://raw.githubusercontent.com/devpro/infrastructure-provision
 
 # installs & initializes Rancher
 rancher_install_withcertmanagerclusterissuer $RANCHER_REPOSITORY $RANCHER_VERSION $RANCHER_REPLICAS $RANCHER_DOMAIN $CERTMANAGER_ISSUER
-RANCHER_URL="https://${RANCHER_DOMAIN}"
 rancher_first_login $RANCHER_URL $RANCHER_PASSWORD
 rancher_create_apikey $RANCHER_URL $LOGIN_TOKEN 'Automation API Key'
+echo $API_TOKEN > rancher_api.token
 rancher_wait_capiready

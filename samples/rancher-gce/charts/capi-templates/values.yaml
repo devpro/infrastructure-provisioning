@@ -1,0 +1,14 @@
+name:
+# values: gke
+type:
+network:
+  pods:
+   cidrBlocks:
+    - 192.168.0.0/16
+googlecloud:
+  # project ID
+  project:
+  # region name (example: europe-west1)
+  region:
+  # VPC name
+  vpc:
