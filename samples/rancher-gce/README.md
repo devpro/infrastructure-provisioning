@@ -26,13 +26,16 @@ gcloud auth login
 
 ### Google Cloud Service Account
 
-From the browser:
+From the browser (see [Create a Service Account](https://cluster-api-gcp.sigs.k8s.io/quick-start#create-a-service-account)):
 
-- Go to [Service Accounts](https://console.cloud.google.com/projectselector/iam-admin/serviceaccounts)
+- Go to [IAM & Admin / Service Accounts](https://console.cloud.google.com/projectselector/iam-admin/serviceaccounts)
 - Switch to your Google Cloud account (may be different from your Google Workspace account)
 - Select the project
 - Create a service account if it does not already exist
-- Create a key and download the json file
+- In Permissions tab, make sure to have/add the roles:
+  - [Editor](https://cloud.google.com/iam/docs/understanding-roles#editor)
+  - For GKE: [Service Account Token Creator](https://cloud.google.com/iam/docs/understanding-roles#iam.serviceAccountTokenCreator) (see [PR #1371](https://github.com/kubernetes-sigs/cluster-api-provider-gcp/pull/1371))
+- In Keys tab, create a key and download the json file
 
 > Google Cloud Service Account is needed manage resources on Google Cloud
 
@@ -166,19 +169,18 @@ echo "Rancher password: ${RANCHER_PASSWORD}"
 
 Merge the cluster configuration with the local one:
 
-- Option 1 (need to open port 6443 in firewall)
 
 ```bash
+# options 1 (need to open port 6443 in firewall)
 scp -i ~/.ssh/google_compute_engine $MANAGEMENT_VM_IP:/etc/rancher/k3s/k3s.yaml samples/rancher-gce/config/management-k3s.yaml
 sed -i "s|server: https://127.0.0.1:6443|server: https://$MANAGEMENT_VM_IP:6443|g" samples/rancher-gce/config/management-k3s.yaml
-chmod 600 samples/rancher-gce/config/management-k3s.yaml
-```
 
-- Option 2 (need Rancher)
-
-```bash
+# option 2 (need Rancher)
 rancher_get_kubeconfig $RANCHER_URL 'local' $RANCHER_APITOKEN samples/rancher-gce/config/management-k3s.yaml
+
+# in all cases
 chmod 600 samples/rancher-gce/config/management-k3s.yaml
+KUBECONFIG=$(pwd)/samples/rancher-gce/config/management-k3s.yaml
 ```
 
 Configure access to Google Cloud within Rancher from the browser:
@@ -234,8 +236,10 @@ References:
 Initialize Google Cloud CAPI Provider (ref. [The Cluster API Book > Quick Start](https://cluster-api.sigs.k8s.io/user/quick-start)):
 
 ```bash
-# important to be done before (see https://github.com/kubernetes-sigs/cluster-api-provider-gcp/discussions/925),
-# otherwise, if init of the provider already done delete the infrastructure + manual deletion of namespace and CRDs
+export GCP_B64ENCODED_CREDENTIALS=$(cat $GCLOUD_SERVICEACCOUNT_KEYSFILE | base64 | tr -d '\n')
+
+# important to be done before (see https://cluster-api-gcp.sigs.k8s.io/managed/enabling, https://github.com/kubernetes-sigs/cluster-api-provider-gcp/discussions/925),
+# otherwise, if init of the provider already done delete the infrastructure + manual deletion of namespace and CRDs (`clusterctl delete --infrastructure `gcp`)
 export EXP_CAPG_GKE=true
 
 clusterctl init --infrastructure gcp
@@ -256,6 +260,10 @@ References:
 
 - CAPI provider for Google Cloud [code](https://github.com/kubernetes-sigs/cluster-api-provider-gcp), [book](https://cluster-api-gcp.sigs.k8s.io/),
 [test/e2e/data](https://github.com/kubernetes-sigs/cluster-api-provider-gcp/tree/main/test/e2e/data/infrastructure-gcp)
+
+Known issues:
+
+- [PR #1364](https://github.com/kubernetes-sigs/cluster-api-provider-gcp/pull/1364)
 
 ### Downstream RKE2 cluster on GCE with Cluster API and Rancher Turtles
 
