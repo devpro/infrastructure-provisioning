@@ -4,12 +4,16 @@ This chart will simplify the use of CAPI to manage your Kubernetes clusters.
 
 ## Quick start
 
+### Setup
+
 Add the Helm repository:
 
 ```bash
 helm repo add devpro https://devpro.github.io/helm-charts
 helm repo update
 ```
+
+### GKE
 
 Generate template for GKE (Google Cloud Managed Kubernetes cluster):
 
@@ -21,26 +25,23 @@ googlecloud:
   project: $GCLOUD_PROJECT_ID
   region: $GCLOUD_REGION
   vpc: $GCLOUD_VPC
+  zone: $GCLOUD_ZONE
+  subnet:
+    name: $GCLOUD_SUBNET
 EOF
 
 helm template capi-gke-demo . -f values.yaml -f values_gke.yaml > temp.yaml
 
 helm upgrade --install capi-gke-demo . -f values.yaml -f values_gke.yaml --namespace demo --create-namespace
 
+kubectl get cluster -n demo
 
+clusterctl describe cluster gke-capi-bthomas-demo -n demo
 ```
-
-Install the app with default settings:
-
-```bash
-helm upgrade --install capi-templates devpro/capi-templates --namespace demo --create-namespace
-```
-
-Look at [values.yaml](values.yaml) for the configuration.
 
 Clean-up:
 
 ```bash
-helm delete capi-templates -n demo
+helm delete capi-gke-demo -n demo
 kubectl delete ns demo
 ```

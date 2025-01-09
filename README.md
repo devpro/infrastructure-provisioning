@@ -1,6 +1,6 @@
 # Infrastructure provisioning
 
-Work in progress (initiated in March 2024, last updated December 2024)
+Work in progress (initiated in March 2024, last updated January 2025)
 
 ## Getting started
 

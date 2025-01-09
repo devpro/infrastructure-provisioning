@@ -7,4 +7,5 @@ metadata:
 spec:
   location: {{ .Values.googlecloud.region }}
   project: {{ .Values.googlecloud.project }}
+  # releaseChannel: "regular"
 {{- end }}

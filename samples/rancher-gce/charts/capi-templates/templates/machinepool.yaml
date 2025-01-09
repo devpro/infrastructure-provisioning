@@ -5,7 +5,7 @@ metadata:
   name: {{ .Values.name }}-mp-0
 spec:
   clusterName: {{ .Values.name }}
-  replicas: 1
+  replicas: {{ .Values.replicas }}
   template:
     spec:
       bootstrap:

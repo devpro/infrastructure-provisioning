@@ -103,7 +103,7 @@ Create the VM:
 
 ```bash
 gcloud compute addresses create $MANAGEMENT_STATICIP_NAME --region=$GCLOUD_REGION
-googlecloud_create_vm $MANAGEMENT_VM_NAME $GCLOUD_PROJECT_ID $GCLOUD_ZONE n1-standard-8 ubuntu-2204-lts ubuntu-os-cloud $GCLOUD_SUBNET $MANAGEMENT_STATICIP_NAME
+googlecloud_create_vm $MANAGEMENT_VM_NAME $GCLOUD_PROJECT_ID $GCLOUD_ZONE n1-standard-4 ubuntu-2204-lts ubuntu-os-cloud $GCLOUD_SUBNET $MANAGEMENT_STATICIP_NAME
 MANAGEMENT_VM_IP=$(googlecloud_get_vmip $MANAGEMENT_VM_NAME $GCLOUD_ZONE)
 ssh-keyscan -H $MANAGEMENT_VM_IP >> ~/.ssh/known_hosts
 gcloud compute disks resize $MANAGEMENT_VM_NAME --size=50 --zone=$GCLOUD_ZONE --quiet
@@ -225,9 +225,8 @@ ssh -i ~/.ssh/google_compute_engine $MANAGEMENT_VM_IP "bash -s" < ./samples/ranc
 References:
 
 - Kubernetes Cluster API (CAPI) [quick start](https://cluster-api.sigs.k8s.io/user/quick-start.html)
-- CAPI provider for Google Cloud [kubernetes-sigs/cluster-api-provider-gcp](https://github.com/kubernetes-sigs/cluster-api-provider-gcp), [book](https://cluster-api-gcp.sigs.k8s.io/)
 - CAPI provider for RKE2 [rancher/cluster-api-provider-rke2](https://github.com/rancher/cluster-api-provider-rke2)
-- Rancher Turtles [documentation](https://turtles.docs.rancher.com/turtles/v0.15/en/index.html), [releases](https://github.com/rancher/turtles/releases), [e2e/cluster-templates](https://github.com/rancher/turtles/tree/main/test/e2e/data/cluster-templates)
+- Rancher Turtles [docs](https://turtles.docs.rancher.com/turtles/v0.15/en/index.html), [releases](https://github.com/rancher/turtles/releases), [e2e/cluster-templates](https://github.com/rancher/turtles/tree/main/test/e2e/data/cluster-templates)
 - Examples [ashawka/capi-demo](https://github.com/ashawka/capi-demo)
 
 ### Downstream GKE cluster with Cluster API and Rancher Turtles
@@ -252,6 +251,11 @@ export WORKER_MACHINE_COUNT=1
 
 clusterctl generate cluster gke-capi-bthomas-demo --flavor gke -i gcp  > capi-gke-quickstart.yaml
 ```
+
+References:
+
+- CAPI provider for Google Cloud [code](https://github.com/kubernetes-sigs/cluster-api-provider-gcp), [book](https://cluster-api-gcp.sigs.k8s.io/),
+[test/e2e/data](https://github.com/kubernetes-sigs/cluster-api-provider-gcp/tree/main/test/e2e/data/infrastructure-gcp)
 
 ### Downstream RKE2 cluster on GCE with Cluster API and Rancher Turtles
 
@@ -292,3 +296,7 @@ clusterctl get kubeconfig capi-quickstart > capi-quickstart.kubeconfig
 ```bash
 kubectl delete cluster capi-quickstart
 ```
+
+References:
+
+- CAPI provider for RKE2 [code](https://github.com/rancher/cluster-api-provider-rke2), [docs](https://caprke2.docs.rancher.com/00_introduction.html)

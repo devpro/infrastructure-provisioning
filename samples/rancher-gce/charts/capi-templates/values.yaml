@@ -1,6 +1,7 @@
 name:
-# values: gke
+# cluster type (enums: gke)
 type:
+replicas: 1
 network:
   pods:
    cidrBlocks:
@@ -10,5 +11,11 @@ googlecloud:
   project:
   # region name (example: europe-west1)
   region:
+  # zone name
+  zone:
   # VPC name
   vpc:
+  # subnet
+  subnet:
+    name:
+    cidr: "172.20.0.0/16"
