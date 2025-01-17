@@ -2,10 +2,13 @@
 
 ## Setup
 
+- Workstation firewall (ports: 22, 3389, 5986)
+
 - Google Cloud
 
 ```bash
 googlecloud_create_firewallrule "${GCLOUD_VPC}-allow-rdp" $GCLOUD_VPC 'tcp:3389' "${MY_IP}/32"
+googlecloud_create_firewallrule "${GCLOUD_VPC}-allow-winrm" $GCLOUD_VPC 'tcp:5986' "${MY_IP}/32"
 ```
 
 - Rancher
@@ -49,14 +52,24 @@ RKE2_WINDOWS_STATICIP_NAME='ip-bthomas-rke2win'
 gcloud compute addresses create $RKE2_WINDOWS_STATICIP_NAME --region=$GCLOUD_REGION
 RKE2_WINDOWS_VM_NAME='vm-bthomas-rke2win'
 googlecloud_create_vm $RKE2_WINDOWS_VM_NAME $GCLOUD_PROJECT_ID $GCLOUD_ZONE n1-standard-4 windows-2022 windows-cloud $GCLOUD_SUBNET $RKE2_WINDOWS_STATICIP_NAME
-RKE2_WINDOWS_VM_IP=$(googlecloud_get_vmip $RKE2_WINDOWS_VM_NAME $GCLOUD_ZONE)
+RKE2_WINDOWS_VM_RESET_OUTPUT=$(gcloud beta compute --project $GCLOUD_PROJECT_ID reset-windows-password $RKE2_WINDOWS_VM_NAME --zone $GCLOUD_ZONE --format=json --quiet)
+RKE2_WINDOWS_VM_IP=$(echo "$RKE2_WINDOWS_VM_RESET_OUTPUT"  | jq -r '.ip_address')
+# tip: you must add AzureAD\ before the username (ref. https://learn.microsoft.com/en-us/answers/questions/53514/credentials-supplied-to-the-package-were-not-recog)
+RKE2_WINDOWS_VM_USERNAME=$(echo "$RKE2_WINDOWS_VM_RESET_OUTPUT"  | jq -r '.username')
+RKE2_WINDOWS_VM_USERPWD=$(echo "$RKE2_WINDOWS_VM_RESET_OUTPUT"  | jq -r '.password  ')
+RKE2_WINDOWS_REGISTERCOMMAND=$(rancher_return_clusterregistrationcommand $RKE2_CLUSTER_ID windows)
 ```
 
 - Install RKE2 worker on Windows VM:
 
-```bash
-RKE2_WINDOWS_REGISTERCOMMAND=$(rancher_return_clusterregistrationcommand $RKE2_CLUSTER_ID windows)
-gcloud compute ssh $RKE2_WINDOWS_STATICIP_NAME --zone=$GCLOUD_ZONE --command="${RKE2_LINUX_REGISTERCOMMAND} --etcd --controlplane --worker"
+```ps1
+$credentials = Get-Credential
+# establishes an interactive PowerShell session
+Enter-PSSession -ComputerName $RKE2_WINDOWS_VM_IP -UseSSL -SessionOption (New-PSSessionOption -SkipCACheck -SkipCNCheck) -Credential $credentials
+# invoke commands on the Windows Server VM remotely
+$script=@'powershell -Command "Start-Process PowerShell -Verb RunAs"
+Enable-WindowsOptionalFeature -Online -FeatureName containers -All
+'@
+Invoke-Command -ComputerName $RKE2_WINDOWS_VM_IP -ScriptBlock { $script } -UseSSL -SessionOption (New-PSSessionOption -SkipCACheck -SkipCNCheck) -Credential $credentials
+Invoke-Command -ComputerName $RKE2_WINDOWS_VM_IP -ScriptBlock { $RKE2_WINDOWS_REGISTERCOMMAND } -UseSSL -SessionOption (New-PSSessionOption -SkipCACheck -SkipCNCheck) -Credential $credentials
 ```
-
-- 

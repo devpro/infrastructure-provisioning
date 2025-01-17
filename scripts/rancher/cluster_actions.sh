@@ -148,7 +148,7 @@ rancher_return_clusterregistrationcommand() {
   if [ "$osfamily" == 'linux' ]; then
     kubectl get clusterregistrationtoken.management.cattle.io -n $id -o=jsonpath='{.items[*].status.nodeCommand}'
   else
-    kubectl get clusterregistrationtoken.management.cattle.io -n $id -o=jsonpath='{.items[*].status.windowsNodeCommand}'
+    kubectl get clusterregistrationtoken.management.cattle.io default-token -n $id -o=jsonpath='{.status.windowsNodeCommand}'
   fi
 }
 
