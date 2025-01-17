@@ -34,6 +34,7 @@ gcloud compute ssh $RKE2_LINUX_VM_NAME --zone=$GCLOUD_ZONE --command="sudo resiz
 ```bash
 RKE2_CLUSTER_NAME='demo'
 RKE2_K8S_VERSION='v1.31.3+rke2r1'
+# TODO: uncheck CoreDNS (issue with replicas 2 and node affinity on Linux)
 rancher_create_customcluster_nowait $RKE2_CLUSTER_NAME $RKE2_K8S_VERSION
 RKE2_CLUSTER_ID=$(rancher_return_clusterid $RKE2_CLUSTER_NAME)
 ```
@@ -43,6 +44,8 @@ RKE2_CLUSTER_ID=$(rancher_return_clusterid $RKE2_CLUSTER_NAME)
 ```bash
 RKE2_LINUX_REGISTERCOMMAND=$(rancher_return_clusterregistrationcommand $RKE2_CLUSTER_ID)
 gcloud compute ssh $RKE2_LINUX_VM_NAME --zone=$GCLOUD_ZONE --command="${RKE2_LINUX_REGISTERCOMMAND} --etcd --controlplane --worker"
+# TODO wait for the cluster to be ready
+# TODO install CoreDNS (replicas = 1)
 ```
 
 - Create Windows VM:
@@ -67,7 +70,7 @@ $credentials = Get-Credential
 # establishes an interactive PowerShell session
 Enter-PSSession -ComputerName $RKE2_WINDOWS_VM_IP -UseSSL -SessionOption (New-PSSessionOption -SkipCACheck -SkipCNCheck) -Credential $credentials
 # invoke commands on the Windows Server VM remotely
-$script=@'powershell -Command "Start-Process PowerShell -Verb RunAs"
+$script = @'powershell -Command "Start-Process PowerShell -Verb RunAs"
 Enable-WindowsOptionalFeature -Online -FeatureName containers -All
 '@
 Invoke-Command -ComputerName $RKE2_WINDOWS_VM_IP -ScriptBlock { $script } -UseSSL -SessionOption (New-PSSessionOption -SkipCACheck -SkipCNCheck) -Credential $credentials
