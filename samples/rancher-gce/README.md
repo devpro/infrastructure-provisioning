@@ -270,7 +270,7 @@ Known issues:
 Initialize RKE2 Provider (ref. [Kubernetes Cluster API Provider RKE2 > Getting Started](https://caprke2.docs.rancher.com/01_user/01_getting-started.html)):
 
 ```bash
-ssh -i ~/.ssh/google_compute_engine $MANAGEMENT_VM_IP "GCP_B64ENCODED_CREDENTIALS=$GCP_B64ENCODED_CREDENTIALS bash -c 'clusterctl init --bootstrap rke2 --control-plane rke2 --infrastructure gcp'"
+clusterctl init --bootstrap rke2 --control-plane rke2 --infrastructure gcp
 ```
 
 ```bash

@@ -53,6 +53,9 @@ googlecloud_create_vm() {
     --image-project="${imageProject}" \
     --network-interface=network-tier=PREMIUM,stack-type=IPV4_ONLY,subnet=${subnet},address=$staticip
 
+    # --boot-disk-type=pd-ssd \
+    # --boot-disk-size=50GB
+
   echo "VM ${name} created successfully"
 }
 

@@ -25,7 +25,7 @@ rancher_create_customcluster_nowait() {
   local name=$1
   local version=$2
 
-  rancher_wait_capiready
+  #rancher_wait_capiready
 
   echo 'Creating downstream cluster in Rancher...'
   cat <<EOF | kubectl apply -f -
@@ -137,13 +137,19 @@ rancher_get_clusterid() {
 # Return cluster registration command line from Rancher
 # Arguments:
 #   cluster ID
+#   operating system family (linux, windows) - optional (linux by default)
 # Examples:
 #   CLUSTER_REGISTRATION_COMMAND=$(rancher_get_clusterregistrationcommand 42)
 #######################################
 rancher_return_clusterregistrationcommand() {
   local id=$1
+  local osfamily=${2:-'linux'}
 
-  kubectl get clusterregistrationtoken.management.cattle.io -n $id -o=jsonpath='{.items[*].status.nodeCommand}'
+  if [ "$osfamily" == 'linux' ]; then
+    kubectl get clusterregistrationtoken.management.cattle.io -n $id -o=jsonpath='{.items[*].status.nodeCommand}'
+  else
+    kubectl get clusterregistrationtoken.management.cattle.io -n $id -o=jsonpath='{.items[*].status.windowsNodeCommand}'
+  fi
 }
 
 #######################################
