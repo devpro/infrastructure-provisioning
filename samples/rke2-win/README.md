@@ -46,7 +46,7 @@ RKE2_LINUX_REGISTERCOMMAND=$(rancher_return_clusterregistrationcommand $RKE2_CLU
 gcloud compute ssh $RKE2_LINUX_VM_NAME --zone=$GCLOUD_ZONE --command="${RKE2_LINUX_REGISTERCOMMAND} --etcd --controlplane --worker"
 # TODO wait for the cluster to be ready
 RKE2_CLUSTER_ID=$(rancher_return_clusterid $RKE2_CLUSTER_NAME)
-rancher_get_kubeconfig $RANCHER_URL RKE2_CLUSTER_ID $RANCHER_APITOKEN samples/rke2-win/config/rke2.yaml
+rancher_get_kubeconfig $RANCHER_URL $RKE2_CLUSTER_ID $RANCHER_APITOKEN samples/rke2-win/config/rke2.yaml
 KUBECONFIG=$(pwd)/samples/rke2-win/config/rke2.yaml
 # disables autoscaler (https://docs.rke2.io/helm#customizing-packaged-components-with-helmchartconfig, https://github.com/rancher/rke2-charts/blob/main/charts/rke2-coredns/rke2-coredns/1.33.005/values.yaml)
 cat <<EOF | kubectl apply -f -
