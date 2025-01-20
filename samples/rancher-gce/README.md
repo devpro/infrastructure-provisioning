@@ -98,7 +98,7 @@ googlecloud_create_vpc $GCLOUD_VPC
 googlecloud_create_subnet $GCLOUD_SUBNET $GCLOUD_VPC $GCLOUD_REGION '10.0.0.0/24'
 googlecloud_create_firewallrule "${GCLOUD_VPC}-allow-shell" $GCLOUD_VPC 'tcp:22' "${MY_IP}/32"
 googlecloud_create_firewallrule "${GCLOUD_VPC}-allow-public" $GCLOUD_VPC 'tcp:80,tcp:443,icmp' '0.0.0.0/0'
-googlecloud_create_firewallrule "${GCLOUD_VPC}-allow-internal" $GCLOUD_VPC 'All' '10.128.0.0/9' # default internal IP range for VMs in the VPC
+googlecloud_create_firewallrule "${GCLOUD_VPC}-allow-internal" $GCLOUD_VPC 'All' '10.0.0.0/9'
 googlecloud_create_firewallrule "${GCLOUD_VPC}-allow-healthcheck" $GCLOUD_VPC 'tcp' '35.191.0.0/16,130.211.0.0/22,209.85.152.0/22,209.85.204.0/22'
 ```
 
@@ -168,7 +168,6 @@ echo "Rancher password: ${RANCHER_PASSWORD}"
 ```
 
 Merge the cluster configuration with the local one:
-
 
 ```bash
 # options 1 (need to open port 6443 in firewall)

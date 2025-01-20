@@ -45,7 +45,21 @@ RKE2_CLUSTER_ID=$(rancher_return_clusterid $RKE2_CLUSTER_NAME)
 RKE2_LINUX_REGISTERCOMMAND=$(rancher_return_clusterregistrationcommand $RKE2_CLUSTER_ID)
 gcloud compute ssh $RKE2_LINUX_VM_NAME --zone=$GCLOUD_ZONE --command="${RKE2_LINUX_REGISTERCOMMAND} --etcd --controlplane --worker"
 # TODO wait for the cluster to be ready
-# TODO install CoreDNS (replicas = 1)
+RKE2_CLUSTER_ID=$(rancher_return_clusterid $RKE2_CLUSTER_NAME)
+rancher_get_kubeconfig $RANCHER_URL RKE2_CLUSTER_ID $RANCHER_APITOKEN samples/rke2-win/config/rke2.yaml
+KUBECONFIG=$(pwd)/samples/rke2-win/config/rke2.yaml
+# disables autoscaler (https://docs.rke2.io/helm#customizing-packaged-components-with-helmchartconfig, https://github.com/rancher/rke2-charts/blob/main/charts/rke2-coredns/rke2-coredns/1.33.005/values.yaml)
+cat <<EOF | kubectl apply -f -
+apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+  name: rke2-coredns
+  namespace: kube-system
+spec:
+  valuesContent: |-
+    autoscaler:
+      enabled: false
+EOF
 ```
 
 - Create Windows VM:
