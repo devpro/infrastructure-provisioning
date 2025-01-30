@@ -2,6 +2,12 @@
 
 ## Bash functions
 
+### Docker
+
+Name                     | Source
+-------------------------|-------------------------------------------
+`docker_install_apt` | [docker/docker_install.sh](docker/docker_install.sh)
+
 ### Google Cloud
 
 Name                     | Source

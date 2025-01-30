@@ -6,7 +6,7 @@ In this scenario, we'll see how we can use Rancher to manage Kubernetes clusters
 
 ### Google Cloud SDK
 
-If not already installed, download and install [Google Cloud SDK](https://cloud.google.com/sdk/) on your machine:
+If not already installed, download and install [Google Cloud SDK](https://cloud.google.com/sdk/docs/install) on your machine:
 
 ```bash
 gcloud version
