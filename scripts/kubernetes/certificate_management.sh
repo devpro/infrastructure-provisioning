@@ -34,9 +34,9 @@ k8s_create_letsencryptclusterissuer() {
   local emailAddress=$2
 
   echo "Creating certificate issuers using Let's Encrypt..."
-  helm repo add suse-lab-setup https://opensource.suse.com/lab-setup
+  helm repo add devpro https://devpro.github.io/helm-charts
   helm repo update
-  helm upgrade --install letsencrypt suse-lab-setup/letsencrypt \
+  helm upgrade --install letsencrypt devpro/letsencrypt \
     --namespace cert-manager \
     --set ingress.className=${ingressClassname} \
     --set registration.emailAddress=${emailAddress}
