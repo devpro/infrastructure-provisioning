@@ -2,7 +2,7 @@
 # Collection of functions to work with hosts in Instruqt
 
 #######################################
-# Wait for host startup bootstrap to finish
+# Waits for host startup bootstrap to finish
 # Examples:
 #   instruqt_wait_hoststartup
 #######################################

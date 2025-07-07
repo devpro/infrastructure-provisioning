@@ -4,9 +4,15 @@
 
 ### Docker
 
-Name                     | Source
--------------------------|-------------------------------------------
+Name                 | Source
+---------------------|-----------------------------------------------------
 `docker_install_apt` | [docker/docker_install.sh](docker/docker_install.sh)
+
+### Gitea
+
+Name                                 | Source
+-------------------------------------|-----------------------------------------------------------
+`gitea_kubernetes_install_singlepod` | [gitea/kubernetes_install.sh](gitea/kubernetes_install.sh)
 
 ### Google Cloud
 
