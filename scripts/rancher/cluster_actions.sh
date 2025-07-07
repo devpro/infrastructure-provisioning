@@ -25,8 +25,6 @@ rancher_create_customcluster_nowait() {
   local name=$1
   local version=$2
 
-  #rancher_wait_capiready
-
   echo 'Creating downstream cluster in Rancher...'
   cat <<EOF | kubectl apply -f -
 apiVersion: provisioning.cattle.io/v1
@@ -98,10 +96,7 @@ rancher_create_customcluster() {
   local version=$2
 
   rancher_create_customcluster_nowait $name $version
-
   sleep 10
-
-  rancher_get_clusterid $name
 }
 
 #######################################
@@ -109,7 +104,7 @@ rancher_create_customcluster() {
 # Arguments:
 #   name
 # Examples:
-#   CLUSTER_ID=$(rancher_get_clusterid demo)
+#   CLUSTER_ID=$(rancher_return_clusterid demo)
 #######################################
 rancher_return_clusterid() {
   local name=$1
@@ -118,28 +113,12 @@ rancher_return_clusterid() {
 }
 
 #######################################
-# Get cluster ID from its name
-# Globals:
-#   CLUSTER_ID
-# Arguments:
-#   name
-# Examples:
-#   rancher_get_clusterid demo
-#######################################
-rancher_get_clusterid() {
-  local name=$1
-
-  CLUSTER_ID=$(rancher_return_clusterid $name)
-  echo "DEBUG CLUSTER_ID=${CLUSTER_ID}"
-}
-
-#######################################
 # Return cluster registration command line from Rancher
 # Arguments:
 #   cluster ID
 #   operating system family (linux, windows) - optional (linux by default)
 # Examples:
-#   CLUSTER_REGISTRATION_COMMAND=$(rancher_get_clusterregistrationcommand 42)
+#   CLUSTER_REGISTRATION_COMMAND=$(rancher_return_clusterregistrationcommand 42)
 #######################################
 rancher_return_clusterregistrationcommand() {
   local id=$1
@@ -150,20 +129,4 @@ rancher_return_clusterregistrationcommand() {
   else
     kubectl get clusterregistrationtoken.management.cattle.io default-token -n $id -o=jsonpath='{.status.windowsNodeCommand}'
   fi
-}
-
-#######################################
-# Get cluster registration command line from Rancher
-# Globals:
-#   REGISTRATION_COMMAND
-# Arguments:
-#   cluster ID
-# Examples:
-#   rancher_get_clusterregistrationcommand 42
-#######################################
-rancher_get_clusterregistrationcommand() {
-  local id=$1
-
-  REGISTRATION_COMMAND=$(rancher_return_clusterregistrationcommand $id)
-  echo "DEBUG REGISTRATION_COMMAND=${REGISTRATION_COMMAND}"
 }

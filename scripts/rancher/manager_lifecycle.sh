@@ -70,6 +70,7 @@ rancher_wait_capiready() {
   echo 'Making sure capi-webhook-service is ready...'
   while true; do
     status=$(kubectl get deployment capi-controller-manager -n cattle-provisioning-capi-system -o jsonpath='{.status.conditions[?(@.type=="Available")].status}' 2>/dev/null)
+    echo "DEBUG status=${status}"
     if [ "$status" == 'True' ]; then
       echo 'Deployment capi-controller-manager is available'
       break
