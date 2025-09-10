@@ -41,6 +41,7 @@ gitea_kubernetes_install_singlepod() {
     --set ingress.tls[0].secretName=gitea-tls \
     --set ingress.tls[0].hosts[0]=$hostDomain
 
-  kubectl wait pods -n gitea -l app=gitea --for condition=Ready --timeout=180s
-  while ! kubectl get secret gitea-tls --namespace gitea 2>/dev/null; do sleep 1; done
+  kubectl wait pods -n gitea -l app=gitea --for condition=Ready --timeout=240s
+  kubectl get pods -n gitea
+  while ! kubectl get secret gitea-tls --namespace gitea 2>/dev/null; do echo "Waiting for gitea-tls secret to be created..."; sleep 1; done
 }
