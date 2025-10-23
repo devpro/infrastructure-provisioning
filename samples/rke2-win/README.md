@@ -96,7 +96,7 @@ EOF
 
 - Install RKE2 worker on Windows VM:
 
-```ps1
+```powershell
 $credentials = Get-Credential
 # establishes an interactive PowerShell session
 Enter-PSSession -ComputerName $RKE2_WINDOWS_VM_IP -UseSSL -SessionOption (New-PSSessionOption -SkipCACheck -SkipCNCheck) -Credential $credentials
