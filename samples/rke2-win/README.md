@@ -151,14 +151,16 @@ Search for Windows on Slack, on KB, on Confluence, Wiki, GitHub, docs
 
 - Rancher monitoring (rancher-monitoring:105.1.1+up61.3.2)
 
-> Error: ImagePullBackOff	rancher-monitoring-prometheus-adapter-9d8f566c4-dfgg8.181d14a7d3edc960	Wed, Jan 22 2025  6:43:40 pm
-Failed	Pod rancher-monitoring-prometheus-adapter-9d8f566c4-dfgg8	Error: ErrImagePull	rancher-monitoring-prometheus-adapter-9d8f566c4-dfgg8.181d14a7c25786dc	Wed, Jan 22 2025  6:43:04 pm
-Pulling	Pod rancher-monitoring-prometheus-adapter-9d8f566c4-dfgg8	Pulling image "rancher/mirrored-prometheus-adapter-prometheus-adapter:v0.12.0"
+```text
+Error: ImagePullBackOff  rancher-monitoring-prometheus-adapter-9d8f566c4-dfgg8.181d14a7d3edc960  Wed, Jan 22 2025  6:43:40 pm
+Failed  Pod rancher-monitoring-prometheus-adapter-9d8f566c4-dfgg8  Error: ErrImagePull  rancher-monitoring-prometheus-adapter-9d8f566c4-dfgg8.181d14a7c25786dc  Wed, Jan 22 2025  6:43:04 pm
+Pulling  Pod rancher-monitoring-prometheus-adapter-9d8f566c4-dfgg8  Pulling image "rancher/mirrored-prometheus-adapter-prometheus-adapter:v0.12.0"
+```
 
 rancher/mirrored-prometheus-adapter-prometheus-adapter:v0.12.0
-https://hub.docker.com/r/rancher/mirrored-prometheus-prometheus/tags
+<https://hub.docker.com/r/rancher/mirrored-prometheus-prometheus/tags>
 
-https://github.com/rancher/charts/tree/dev-v2.10/charts/rancher-monitoring/105.1.1%2Bup61.3.2
+<https://github.com/rancher/charts/tree/dev-v2.10/charts/rancher-monitoring/105.1.1%2Bup61.3.2>
 
 rancher-monitoring-prometheus-adapter deployment fails, as the pod is on Windows node and there is no container image for Windows
 
