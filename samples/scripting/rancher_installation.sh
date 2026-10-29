@@ -14,6 +14,7 @@ RANCHER_ADMIN_PASSWORD='Sus3R@ncherR0x'
 
 # downloads and sources shared scripts
 curl -sfL https://raw.githubusercontent.com/devpro/infrastructure-provisioning/${SETUP_BRANCH}/scripts/download.sh | GIT_REVISION=refs/heads/${SETUP_BRANCH} sh -s -- -o lab-setup
+# shellcheck source=/dev/null # Downloaded at run time.
 . lab-setup/scripts/index.sh
 
 # creates administration Kubernetes cluster
@@ -24,10 +25,10 @@ k8s_install_certmanager $CERTMANAGER_VERSION
 k8s_create_letsencryptclusterissuer $INGRESS_CLASSNAME $LETSENCRYPT_EMAIL_ADDRESS
 
 # installs & initializes Rancher
-rancher_install_withcertmanagerclusterissuer $RANCHER_REPOSITORY $RANCHER_VERSION $RANCHER_REPLICAS $RANCHER_DOMAIN letsencrypt-prod
+rancher_install_withcertmanagerclusterissuer $RANCHER_REPOSITORY $RANCHER_VERSION $RANCHER_REPLICAS "$RANCHER_DOMAIN" letsencrypt-prod
 RANCHER_URL="https://${RANCHER_DOMAIN}"
-rancher_first_login $RANCHER_URL $RANCHER_ADMIN_PASSWORD
-rancher_create_apikey $RANCHER_URL $LOGIN_TOKEN 'Automation API Key'
+rancher_first_login "$RANCHER_URL" $RANCHER_ADMIN_PASSWORD
+rancher_create_apikey "$RANCHER_URL" "$LOGIN_TOKEN" 'Automation API Key'
 rancher_wait_capiready
 
 # creates downstream cluster

@@ -29,17 +29,17 @@ gitea_kubernetes_install_singlepod() {
     --set valkey.enabled=false \
     --set valkey-cluster.enabled=false \
     --set gitea.admin.username=admin \
-    --set gitea.admin.password=$adminPassword \
+    --set gitea.admin.password="$adminPassword" \
     --set gitea.config.database.DB_TYPE=sqlite3 \
     --set gitea.config.session.PROVIDER=memory \
     --set gitea.config.cache.ADAPTER=memory \
     --set gitea.config.queue.TYPE=level \
     --set ingress.enabled=true \
-    --set ingress.className=$ingressClassName \
-    --set ingress.annotations.'cert-manager\.io/cluster-issuer'=$certificateClusterIssuer \
-    --set ingress.hosts[0].host=$hostDomain \
+    --set ingress.className="$ingressClassName" \
+    --set ingress.annotations.'cert-manager\.io/cluster-issuer'="$certificateClusterIssuer" \
+    --set ingress.hosts[0].host="$hostDomain" \
     --set ingress.tls[0].secretName=gitea-tls \
-    --set ingress.tls[0].hosts[0]=$hostDomain
+    --set ingress.tls[0].hosts[0]="$hostDomain"
 
   kubectl wait pods -n gitea -l app=gitea --for condition=Ready --timeout=240s
   kubectl get pods -n gitea

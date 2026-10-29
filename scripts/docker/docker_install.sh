@@ -23,6 +23,6 @@ docker_install_apt() {
   sudo apt-get -y install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
   # creates user group to avoid sudo
-  sudo usermod -aG docker $USER
+  sudo usermod -aG docker "$USER"
   newgrp docker
 }

@@ -9,12 +9,13 @@
 #   linux_get_myip
 #######################################
 linux_get_myip() {
-  local myip=$(curl -s https://ipinfo.io/ip)
+  local myip
+  myip=$(curl -s https://ipinfo.io/ip)
 
   if [ -z "$myip" ]; then
     echo "Failed to retrieve public IP address."
     exit 1
   fi
 
-  echo $myip
+  echo "$myip"
 }

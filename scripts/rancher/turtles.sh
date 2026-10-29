@@ -14,7 +14,7 @@ rancher_install_turtles() {
   helm repo add turtles https://rancher.github.io/turtles
   helm repo update
 
-  helm upgrade --install rancher-turtles turtles/rancher-turtles --version $version \
+  helm upgrade --install rancher-turtles turtles/rancher-turtles --version "$version" \
     -n rancher-turtles-system --create-namespace \
     --dependency-update \
     --wait --timeout 180s

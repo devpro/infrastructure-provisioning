@@ -51,7 +51,7 @@ googlecloud_create_vm() {
     --machine-type="${machinType}" \
     --image-family="${imageFamily}" \
     --image-project="${imageProject}" \
-    --network-interface=network-tier=PREMIUM,stack-type=IPV4_ONLY,subnet=${subnet},address=$staticip
+    --network-interface=network-tier=PREMIUM,stack-type=IPV4_ONLY,subnet="${subnet}",address="$staticip"
 
     # --boot-disk-type=pd-ssd \
     # --boot-disk-size=50GB
@@ -73,9 +73,9 @@ googlecloud_get_vmip() {
   local name=$1
   local zone=$2
 
-  echo $(gcloud compute instances describe "${name}" \
+  gcloud compute instances describe "${name}" \
     --zone="${zone}" \
-    --format="get(networkInterfaces[0].accessConfigs[0].natIP)")
+    --format="get(networkInterfaces[0].accessConfigs[0].natIP)"
 }
 
 # Instances on this network will not be reachable until firewall rules are created.
@@ -100,13 +100,11 @@ googlecloud_create_firewallrule() {
   local protocolports=$3
   local iprange=$4
 
-  gcloud compute firewall-rules create $name \
-    --network $vpc \
-    --allow $protocolports \
-    --source-ranges $iprange \
-    --quiet
-
-  if [ $? -eq 0 ]; then
+  if gcloud compute firewall-rules create "$name" \
+    --network "$vpc" \
+    --allow "$protocolports" \
+    --source-ranges "$iprange" \
+    --quiet; then
     echo "Firewall rule updated to allow traffic"
   else
     echo "Failed to update the firewall rule."
@@ -128,5 +126,5 @@ googlecloud_execute_vmcommand() {
   local zone=$2
   local command=$3
 
-  gcloud compute ssh $name --zone=$zone --command="${command}"
+  gcloud compute ssh "$name" --zone="$zone" --command="${command}"
 }

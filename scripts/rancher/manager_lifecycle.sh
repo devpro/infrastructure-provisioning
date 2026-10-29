@@ -20,13 +20,13 @@ rancher_install_withcertmanagerclusterissuer() {
   local clusterissuer=$5
 
   echo 'Installing Rancher...'
-  helm repo add rancher-${repository} https://releases.rancher.com/server-charts/${repository}
+  helm repo add "rancher-${repository}" "https://releases.rancher.com/server-charts/${repository}"
   helm repo update
-  helm upgrade --install rancher rancher-${repository}/rancher --namespace cattle-system --create-namespace \
-    --version ${version} \
-    --set replicas=${replicas} \
-    --set hostname=${hostname} \
-    --set ingress.extraAnnotations.'cert-manager\.io/cluster-issuer'=${clusterissuer} \
+  helm upgrade --install rancher "rancher-${repository}/rancher" --namespace cattle-system --create-namespace \
+    --version "${version}" \
+    --set replicas="${replicas}" \
+    --set hostname="${hostname}" \
+    --set ingress.extraAnnotations.'cert-manager\.io/cluster-issuer'="${clusterissuer}" \
     --set ingress.tls.source=secret \
     --set ingress.tls.secretName=rancher-tls \
     --set agentTLSMode="system-store"
@@ -53,10 +53,10 @@ rancher_first_login() {
   echo 'Do first login on Rancher...'
   BOOTSTRAP_PASSWORD=$(kubectl get secret --namespace cattle-system bootstrap-secret -o go-template='{{.data.bootstrapPassword|base64decode}}{{ "\n" }}')
   echo "DEBUG BOOTSTRAP_PASSWORD=${BOOTSTRAP_PASSWORD}"
-  rancher_login_withpassword $rancherUrl 'admin' $BOOTSTRAP_PASSWORD
+  rancher_login_withpassword "$rancherUrl" 'admin' "$BOOTSTRAP_PASSWORD"
   echo "DEBUG LOGIN_TOKEN=${LOGIN_TOKEN}"
-  rancher_update_password $rancherUrl $LOGIN_TOKEN $BOOTSTRAP_PASSWORD $newPassword
-  rancher_update_serverurl $rancherUrl
+  rancher_update_password "$rancherUrl" "$LOGIN_TOKEN" "$BOOTSTRAP_PASSWORD" "$newPassword"
+  rancher_update_serverurl "$rancherUrl"
 }
 
 #######################################

@@ -33,12 +33,13 @@ RANCHER_REPLICAS=${RANCHER_REPLICAS:-'1'}
 RANCHER_URL="https://${RANCHER_DOMAIN}"
 
 # downloads and sources shared scripts
-curl -sfL -C - https://raw.githubusercontent.com/devpro/infrastructure-provisioning/${SETUP_BRANCH}/scripts/download.sh | GIT_REVISION=refs/heads/${SETUP_BRANCH} sh -s -- -o setup
+curl -sfL -C - "https://raw.githubusercontent.com/devpro/infrastructure-provisioning/${SETUP_BRANCH}/scripts/download.sh" | GIT_REVISION=refs/heads/${SETUP_BRANCH} sh -s -- -o setup
+# shellcheck source=/dev/null # Downloaded at run time.
 . setup/scripts/index.sh
 
 # installs & initializes Rancher
-rancher_install_withcertmanagerclusterissuer $RANCHER_REPOSITORY $RANCHER_VERSION $RANCHER_REPLICAS $RANCHER_DOMAIN $CERTMANAGER_ISSUER
-rancher_first_login $RANCHER_URL $RANCHER_PASSWORD
-rancher_create_apikey $RANCHER_URL $LOGIN_TOKEN 'Automation API Key'
-echo $API_TOKEN > rancher_api.token
+rancher_install_withcertmanagerclusterissuer "$RANCHER_REPOSITORY" "$RANCHER_VERSION" "$RANCHER_REPLICAS" "$RANCHER_DOMAIN" "$CERTMANAGER_ISSUER"
+rancher_first_login "$RANCHER_URL" "$RANCHER_PASSWORD"
+rancher_create_apikey "$RANCHER_URL" "$LOGIN_TOKEN" 'Automation API Key'
+echo "$API_TOKEN" > rancher_api.token
 rancher_wait_capiready
