@@ -95,7 +95,7 @@ rancher_create_customcluster() {
   local name=$1
   local version=$2
 
-  rancher_create_customcluster_nowait $name $version
+  rancher_create_customcluster_nowait "$name" "$version"
   sleep 10
 }
 
@@ -125,8 +125,8 @@ rancher_return_clusterregistrationcommand() {
   local osfamily=${2:-'linux'}
 
   if [ "$osfamily" == 'linux' ]; then
-    kubectl get clusterregistrationtoken.management.cattle.io -n $id -o=jsonpath='{.items[*].status.nodeCommand}'
+    kubectl get clusterregistrationtoken.management.cattle.io -n "$id" -o=jsonpath='{.items[*].status.nodeCommand}'
   else
-    kubectl get clusterregistrationtoken.management.cattle.io default-token -n $id -o=jsonpath='{.status.windowsNodeCommand}'
+    kubectl get clusterregistrationtoken.management.cattle.io default-token -n "$id" -o=jsonpath='{.status.windowsNodeCommand}'
   fi
 }

@@ -19,5 +19,5 @@ update_env() {
       echo "Added $key to $env_file."
   fi
 
-  export $key=$value
+  export "$key"="$value"
 }

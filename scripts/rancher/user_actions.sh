@@ -25,7 +25,8 @@ rancher_login_withpassword() {
       \"password\": \"$password\"
     }")
   echo "DEBUG LOGIN_RESPONSE=${LOGIN_RESPONSE}"
-  LOGIN_TOKEN=$(echo $LOGIN_RESPONSE | jq -r .token)
+  # shellcheck disable=SC2034 # The caller reads it.
+  LOGIN_TOKEN=$(echo "$LOGIN_RESPONSE" | jq -r .token)
 }
 
 #######################################
@@ -81,7 +82,8 @@ rancher_create_apikey() {
       "ttl": 0
     }')
   echo "DEBUG API_KEY_RESPONSE=${API_KEY_RESPONSE}"
-  API_TOKEN=$(echo $API_KEY_RESPONSE | jq -r .token)
+  # shellcheck disable=SC2034 # The caller reads it.
+  API_TOKEN=$(echo "$API_KEY_RESPONSE" | jq -r .token)
   sleep 5
 }
 
@@ -94,5 +96,5 @@ rancher_get_kubeconfig() {
   curl -s -k -H "Authorization: Bearer $token" \
     -H 'Content-Type: application/json' \
     -X POST \
-    "$rancherUrl/v3/clusters/$clusterName?action=generateKubeconfig" | jq -r .config > $outputFile
+    "$rancherUrl/v3/clusters/$clusterName?action=generateKubeconfig" | jq -r .config > "$outputFile"
 }

@@ -60,20 +60,20 @@ setup_env() {
 
 download() {
   info 'Download scripts'
-  wget https://github.com/devpro/${GIT_REPO_NAME}/archive/${GIT_REVISION}.zip -O ${GIT_REPO_NAME}.zip
+  wget "https://github.com/devpro/${GIT_REPO_NAME}/archive/${GIT_REVISION}.zip" -O ${GIT_REPO_NAME}.zip
   unzip -o ${GIT_REPO_NAME}.zip
-  mkdir -p ${OUTPUT_FOLDER}
-  if [ -d ${OUTPUT_FOLDER}/scripts ]; then
+  mkdir -p "${OUTPUT_FOLDER}"
+  if [ -d "${OUTPUT_FOLDER}/scripts" ]; then
     info "Delete ${OUTPUT_FOLDER}/scripts"
-    rm -rf ${OUTPUT_FOLDER}/scripts
+    rm -rf "${OUTPUT_FOLDER}/scripts"
   fi
-  mv ${GIT_REPO_NAME}-${GIT_FOLDER}/scripts ${OUTPUT_FOLDER}
+  mv "${GIT_REPO_NAME}-${GIT_FOLDER}/scripts" "${OUTPUT_FOLDER}"
 }
 
 cleanup() {
   info 'Clean-up'
   rm -f ${GIT_REPO_NAME}.zip
-  rm -rf ${GIT_REPO_NAME}-${GIT_FOLDER}
+  rm -rf "${GIT_REPO_NAME}-${GIT_FOLDER}"
 }
 
 {

@@ -9,7 +9,7 @@
 googlecloud_create_vpc() {
   local name=$1
 
-  gcloud compute networks create $name --subnet-mode=custom
+  gcloud compute networks create "$name" --subnet-mode=custom
 }
 
 #######################################
@@ -20,7 +20,7 @@ googlecloud_create_vpc() {
 googlecloud_delete_vpc() {
   local name=$1
 
-  gcloud compute networks delete $name
+  gcloud compute networks delete "$name"
 }
 
 #######################################
@@ -34,5 +34,5 @@ googlecloud_create_subnet() {
   local region=$3
   local range=$4
 
-  gcloud compute networks subnets create $name --network=$vpc --region=$region --range=$range
+  gcloud compute networks subnets create "$name" --network="$vpc" --region="$region" --range="$range"
 }

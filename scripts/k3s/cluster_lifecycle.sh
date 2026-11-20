@@ -15,9 +15,7 @@ k3s_create_cluster() {
     echo "k3s is already installed. Skipping installation."
   else
     echo 'Create management cluster (K3s)...'
-    curl -sfL https://get.k3s.io | INSTALL_K3S_CHANNEL="${version}" K3S_KUBECONFIG_MODE="644" sh -
-
-    if [ $? -eq 0 ]; then
+    if curl -sfL https://get.k3s.io | INSTALL_K3S_CHANNEL="${version}" K3S_KUBECONFIG_MODE="644" sh -; then
       echo "k3s installation completed successfully."
     else
       echo "Failed to install k3s. Exiting."

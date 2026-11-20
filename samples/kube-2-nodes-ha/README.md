@@ -1,6 +1,6 @@
 # Two-Node High Availability to Kubernetes with K3s and NATS
 
-🌐 [The next gen platform for the edge: SUSE and Synadia Bring Two-Node High Availability to Kubernetes](https://www.suse.com/c/the-next-gen-platform-for-the-edge-suse-and-synadia-bring-two-node-high-availability-to-kubernetes/) - March 11, 2024
+🌐 March 11, 2024: [The next gen platform for the edge: SUSE and Synadia Bring Two-Node High Availability to Kubernetes](https://www.suse.com/c/the-next-gen-platform-for-the-edge-suse-and-synadia-bring-two-node-high-availability-to-kubernetes/)
 
 ## Installation
 

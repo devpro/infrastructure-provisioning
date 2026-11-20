@@ -18,8 +18,9 @@ SETUP_BRANCH=${SETUP_BRANCH:-'feature/init-scripts'}
 RANCHERTURTLES_VERSION=${RANCHERTURTLES_VERSION:-'v0.15.0'}
 
 # downloads and sources shared scripts
-curl -sfL -C - https://raw.githubusercontent.com/devpro/infrastructure-provisioning/${SETUP_BRANCH}/scripts/download.sh | GIT_REVISION=refs/heads/${SETUP_BRANCH} sh -s -- -o setup
+curl -sfL -C - "https://raw.githubusercontent.com/devpro/infrastructure-provisioning/${SETUP_BRANCH}/scripts/download.sh" | GIT_REVISION=refs/heads/${SETUP_BRANCH} sh -s -- -o setup
+# shellcheck source=/dev/null # Downloaded at run time.
 . setup/scripts/index.sh
 
 # installs Rancher Turtles
-rancher_install_turtles $RANCHERTURTLES_VERSION
+rancher_install_turtles "$RANCHERTURTLES_VERSION"
